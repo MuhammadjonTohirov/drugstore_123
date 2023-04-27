@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:drugstore/database/models/Drug.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -29,7 +28,9 @@ class DrugItem extends StatefulWidget {
   void setOnClick(Function(int) onClick) {
     this.onClick = onClick;
   }
+
   Uint8List? imageData;
+
   factory DrugItem.createWith(Drug drug) {
     return DrugItem(
       id: drug.id ?? 0,
@@ -57,7 +58,6 @@ class _DrugItemState extends State<DrugItem> {
   Widget build(BuildContext context) {
     // add on hover method
     // highlight on hover
-
     _loadImage();
     return InkWell(
         onTap: () {
@@ -65,7 +65,7 @@ class _DrugItemState extends State<DrugItem> {
         },
         child: body());
   }
-  
+
   Widget body() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),

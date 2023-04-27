@@ -39,8 +39,11 @@ class AddDrugController extends GetxController {
     // save image at imagePath to a folder
 
     File imageFile = File(imagePath!);
-    
+
     String imageKey = imageFile.absolute.path.replaceAll("\\", "_");
+    String fileName = imageFile.path.split('/').last;
+
+    imageFile.copySync(fileName);
 
     final drug = Drug(
       name: titleController.text,
@@ -66,16 +69,22 @@ class AddDrugController extends GetxController {
     }
 
     File imageFile = File(imagePath!);
-    
     String imageKey = imageFile.absolute.path.replaceAll("/", "_");
-    
+
     final drug = Drug(
       name: titleController.text,
       description: descriptionController.text,
       image: imageKey,
     );
 
-    MediaManager.instance.update(imageKey, await imageFile.readAsBytes()); 
+    MediaManager.instance.update(imageKey, await imageFile.readAsBytes());
+    String fileName = imageFile.path.split('/').last;
+
+    if (imageFile.existsSync()) {
+      imageFile.copySync(fileName);
+    } else {
+      fileName = imagePath!;
+    }
 
     if (drug.id == null && id != null) {
       drug.id = id;

@@ -19,8 +19,6 @@ class AddNewItem extends StatefulWidget {
   _AddNewItemState createState() => _AddNewItemState();
 
   void initState() {
-
-   
     if (drug != null) {
       controller.titleController.text = drug!.name;
       controller.descriptionController.text = drug!.description;
@@ -116,7 +114,8 @@ class _AddNewItemState extends State<AddNewItem> {
       return Image.asset('bin/media/placeholder.png', fit: BoxFit.cover);
     } else {
       // b: if image path is not null, show image from path
-      if (File(widget.controller.imagePath!).existsSync() && widget.drug == null) {
+      if (File(widget.controller.imagePath!).existsSync() &&
+          widget.drug == null) {
         return Image.file(
           File(widget.controller.imagePath!),
           fit: BoxFit.cover,
@@ -126,10 +125,7 @@ class _AddNewItemState extends State<AddNewItem> {
         if (widget.controller.imageData == null) {
           return Image.asset('bin/media/placeholder.png', fit: BoxFit.cover);
         }
-        return Image.memory(
-          widget.controller.imageData!,
-          fit: BoxFit.cover
-        );
+        return Image.memory(widget.controller.imageData!, fit: BoxFit.cover);
       }
     }
   }
