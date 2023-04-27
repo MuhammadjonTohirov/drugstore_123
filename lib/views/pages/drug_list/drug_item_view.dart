@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:drugstore/database/models/Drug.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image/image.dart' as img;
 
 import '../../../controllers/drug_list_controller.dart';
 import '../../../database/media_manager.dart';
@@ -29,7 +29,7 @@ class DrugItem extends StatefulWidget {
     this.onClick = onClick;
   }
 
-  Uint8List? imageData;
+  img.Image? _imageView;
 
   factory DrugItem.createWith(Drug drug) {
     return DrugItem(
@@ -58,12 +58,27 @@ class _DrugItemState extends State<DrugItem> {
   Widget build(BuildContext context) {
     // add on hover method
     // highlight on hover
-    _loadImage();
     return InkWell(
         onTap: () {
           widget.onClick(widget.id);
         },
         child: body());
+  }
+
+  bool _isAlive = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadImage();
+    _isAlive = true;
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _isAlive = false;
   }
 
   Widget body() {
@@ -144,26 +159,39 @@ class _DrugItemState extends State<DrugItem> {
   }
 
   Widget _imageView2() {
-    if (widget.imageData != null) {
+    if (widget._imageView != null) {
+      //with fit cover and with 100
       return Image.memory(
-        widget.imageData!,
+        img.encodePng(widget._imageView!),
         fit: BoxFit.cover,
         width: 100,
+        height: 70,
       );
     } else {
       return Image.asset(
         'bin/media/placeholder.png',
         fit: BoxFit.cover,
         width: 100,
+        height: 70,
       );
     }
   }
 
   void _loadImage() {
     String imageKey = widget.image;
+
     MediaManager.instance.get(imageKey).then((value) {
+      if (!_isAlive) {
+        return;
+      }
+
       setState(() {
-        widget.imageData = value;
+        if (value == null) {
+          widget._imageView = null;
+          return;
+        }
+        final image = img.decodeImage(value);
+        widget._imageView = image;
       });
     });
   }

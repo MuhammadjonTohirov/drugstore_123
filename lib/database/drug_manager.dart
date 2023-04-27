@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:drugstore/database/models/Drug.dart';
 import 'package:sqflite_common/sqlite_api.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -45,6 +47,7 @@ class DrugManager {
       'id = ?',
       whereArgs: [drug.id],
     );
+
     print("Edit result: $result");
     return get(result);
   }

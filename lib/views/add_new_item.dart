@@ -6,6 +6,7 @@ import 'package:drugstore/database/models/Drug.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
+import 'package:image/image.dart' as img;
 
 // ignore: must_be_immutable
 class AddNewItem extends StatefulWidget {
@@ -22,21 +23,34 @@ class AddNewItem extends StatefulWidget {
     if (drug != null) {
       controller.titleController.text = drug!.name;
       controller.descriptionController.text = drug!.description;
-      controller.imagePath = drug!.image;
       controller.id = drug?.id;
     } else {
       controller.titleController.clear();
       controller.descriptionController.clear();
       controller.imagePath = null;
+      controller.imageValue = null;
       controller.id = null;
     }
   }
 }
 
 class _AddNewItemState extends State<AddNewItem> {
+  bool _isAlive = false;
+  @override
+  void initState() {
+    super.initState();
+    _isAlive = true;
+    _loadImageFromDb();
+  }
+
+  @override
+  void dispose() {
+    _isAlive = false;
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    _loadImageFromDb();
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -110,22 +124,32 @@ class _AddNewItemState extends State<AddNewItem> {
 
   Widget imageView() {
     // a: if image path is null, show placeholder image
-    if (widget.controller.imagePath == null) {
+    if (widget.drug?.image.isEmpty ??
+        true && widget.controller.imagePath == null) {
       return Image.asset('bin/media/placeholder.png', fit: BoxFit.cover);
     } else {
       // b: if image path is not null, show image from path
-      if (File(widget.controller.imagePath!).existsSync() &&
-          widget.drug == null) {
-        return Image.file(
-          File(widget.controller.imagePath!),
-          fit: BoxFit.cover,
-        );
+      if (widget.controller.imagePath != null) {
+        if (File(widget.controller.imagePath!).existsSync()) {
+          return Image.file(
+            File(widget.controller.imagePath!),
+            fit: BoxFit.cover,
+          );
+        } else {
+          return Image.memory(
+            img.encodePng(widget.controller.imageValue!),
+            fit: BoxFit.cover,
+          );
+        }
       } else {
         // c: if image path is not null, but file not exists, show placeholder image
-        if (widget.controller.imageData == null) {
+        if (widget.controller.imageValue == null) {
           return Image.asset('bin/media/placeholder.png', fit: BoxFit.cover);
         }
-        return Image.memory(widget.controller.imageData!, fit: BoxFit.cover);
+        return Image.memory(
+          img.encodePng(widget.controller.imageValue!),
+          fit: BoxFit.cover,
+        );
       }
     }
   }
@@ -134,7 +158,14 @@ class _AddNewItemState extends State<AddNewItem> {
     if (widget.drug != null && widget.drug!.image.isNotEmpty) {
       MediaManager.instance.get(widget.drug!.image).then((value) {
         setState(() {
-          widget.controller.imageData = value;
+          if (value == null) {
+            widget.controller.imagePath = null;
+            widget.controller.imageValue = null;
+            return;
+          }
+
+          img.Image? image = img.decodeImage(value);
+          widget.controller.imageValue = image;
         });
       });
     }
@@ -144,10 +175,13 @@ class _AddNewItemState extends State<AddNewItem> {
   void onClickSelectImage() {
     // a: use file_picker package
     // https://pub.dev/packages/file_picker
-    FilePicker.platform.pickFiles(
+    FilePicker.platform
+        .pickFiles(
       type: FileType.custom,
       allowedExtensions: ['jpg', 'png', 'jpeg'],
-    ).then((value) {
+      allowCompression: true,
+    )
+        .then((value) {
       if (value != null) {
         final path = value.files.single.path;
         setState(() {

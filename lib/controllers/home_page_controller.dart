@@ -102,16 +102,14 @@ class HomePageController extends GetxController {
               }
             });
           } else {
-            controller.updateDrug().then((drug) {
-              if (drug != null) {
-                // add new drug to list
-                DrugListController drugListController =
-                    Get.find<DrugListController>();
-                drugListController.reloadData();
-                menusForHomePage();
+            controller.updateDrug().then((_) {
+              // update drug list
+              DrugListController drugListController =
+                  Get.find<DrugListController>();
+              drugListController.reloadData();
+              menusForHomePage();
 
-                routeType.value = RouteType.home;
-              }
+              routeType.value = RouteType.home;
             });
           }
         },

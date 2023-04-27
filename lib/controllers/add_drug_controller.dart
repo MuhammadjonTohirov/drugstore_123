@@ -6,13 +6,14 @@ import 'package:drugstore/database/media_manager.dart';
 import 'package:drugstore/database/models/Drug.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image/image.dart' as img;
 
 class AddDrugController extends GetxController {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController descriptionController = TextEditingController();
 
   String? imagePath;
-  Uint8List? imageData;
+  img.Image? imageValue;
   int? id;
 
   @override
@@ -36,14 +37,9 @@ class AddDrugController extends GetxController {
       return null;
     }
 
-    // save image at imagePath to a folder
-
     File imageFile = File(imagePath!);
 
     String imageKey = imageFile.absolute.path.replaceAll("\\", "_");
-    String fileName = imageFile.path.split('/').last;
-
-    imageFile.copySync(fileName);
 
     final drug = Drug(
       name: titleController.text,
@@ -51,7 +47,7 @@ class AddDrugController extends GetxController {
       image: imageKey,
     );
 
-    MediaManager.instance.add(imageKey, await imageFile.readAsBytes());
+    await MediaManager.instance.addFromFile(imageFile);
     return await DrugManager.instance.add(drug);
   }
 
@@ -69,7 +65,7 @@ class AddDrugController extends GetxController {
     }
 
     File imageFile = File(imagePath!);
-    String imageKey = imageFile.absolute.path.replaceAll("/", "_");
+    String imageKey = imageFile.absolute.path.replaceAll("\\", "_");
 
     final drug = Drug(
       name: titleController.text,
@@ -77,18 +73,11 @@ class AddDrugController extends GetxController {
       image: imageKey,
     );
 
-    MediaManager.instance.update(imageKey, await imageFile.readAsBytes());
-    String fileName = imageFile.path.split('/').last;
-
-    if (imageFile.existsSync()) {
-      imageFile.copySync(fileName);
-    } else {
-      fileName = imagePath!;
-    }
-
     if (drug.id == null && id != null) {
       drug.id = id;
     }
+
+    await MediaManager.instance.updateWithFile(imageKey, imageFile);
 
     return await DrugManager.instance.update(drug);
   }
